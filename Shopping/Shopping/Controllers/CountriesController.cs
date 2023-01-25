@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Shopping.Data;
 using Shopping.Data.Entities;
 using System.Data;
+using Vereyon.Web;
 
 namespace Shopping.Controllers
 {
@@ -11,10 +12,12 @@ namespace Shopping.Controllers
     public class CountriesController : Controller
     {
         private readonly DataContext _context;
+        private readonly IFlashMessage _flashMessage;
 
-        public CountriesController(DataContext context)
+        public CountriesController(DataContext context, IFlashMessage flashMessage)
         {
             _context = context;
+            _flashMessage = flashMessage;
         }
 
         
@@ -58,23 +61,23 @@ namespace Shopping.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
+                    _flashMessage.Info("País creado exitosamente!");
                     return RedirectToAction(nameof(Index));
-
                 }
                 catch (DbUpdateException dbUpdateException)
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe un país con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe un país con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
             }
             return View(country);
@@ -112,29 +115,30 @@ namespace Shopping.Controllers
                 try
                 {
                     _context.Update(country);
+                    _flashMessage.Info("País actualizado exitosamente!");
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateException dbUpdateException)
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe un país con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe una edificio con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception exception)
                 {
-                    ModelState.AddModelError(string.Empty, exception.Message);
+                    _flashMessage.Danger(exception.Message);
                 }
                 return RedirectToAction(nameof(Index));
             }
             return View(country);
         }
 
-        
+
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Countries == null)
@@ -149,28 +153,21 @@ namespace Shopping.Controllers
                 return NotFound();
             }
 
-            return View(country);
-        }
-
-        
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            if (_context.Countries == null)
-            {
-                return Problem("Entity set 'DataContext.Countries'  is null.");
-            }
-            var country = await _context.Countries.FindAsync(id);
-            if (country != null)
+            try
             {
                 _context.Countries.Remove(country);
+                await _context.SaveChangesAsync();
+                _flashMessage.Info("Registro borrado.");
+
+            }
+            catch
+            {
+                _flashMessage.Danger("No se puede borrar la categoría porque tiene registros relacionados.");
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using Shopping.Data.Entities;
+﻿using Shopping.Common;
+using Shopping.Data.Entities;
 
 namespace Shopping.Models
 {
@@ -7,8 +8,8 @@ namespace Shopping.Models
         
         public float Quantity { get; set; }
 
-        public ICollection<Product> Products { get; set; }
+        public PaginatedList<Product> Products { get; set; }
 
-
+        public ICollection<Category> Categories { get; set; }
     }
 }
