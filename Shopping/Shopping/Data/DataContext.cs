@@ -16,6 +16,11 @@ namespace Shopping.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
+        public DbSet<TemporalSale> TemporalSales { get; set; }
+        public DbSet<Sale> Sales { get; set; }
+        public DbSet<SaleDetail> SaleDetails { get; set; }
+
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
